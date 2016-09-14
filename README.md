@@ -1,7 +1,10 @@
 # redux-demo
 
-* counter-vanilla
 * counter
+* counter-vanilla
+* counter-vanilla-saga
+* thunk-async
+* saga-async
 
 ## LICENSE
 
