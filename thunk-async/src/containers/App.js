@@ -60,11 +60,11 @@ const App = enhance(({
   dispatch
 }) => {
   const handleChange = (nextReddit) =>
-    dispatch(selectReddit(nextReddit));
+    dispatch(selectReddit({ reddit: nextReddit }));
 
   const handleRefreshClick = (e) => {
     e.preventDefault();
-    dispatch(invalidateReddit(selectedReddit));
+    dispatch(invalidateReddit({ reddit: selectedReddit }));
     dispatch(fetchPostsIfNeeded(selectedReddit));
   };
 

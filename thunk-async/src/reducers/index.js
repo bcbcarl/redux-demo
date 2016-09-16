@@ -1,61 +1,44 @@
-import { merge } from 'ramda';
+import { merge, repeat, zipObj } from 'ramda';
 import { combineReducers } from 'redux';
+import { handleActions } from 'redux-actions';
 
-import {
-  SELECT_REDDIT,
-  INVALIDATE_REDDIT,
-  REQUEST_POSTS,
-  RECEIVE_POSTS
-} from '../actions';
+const selectedReddit = handleActions({
+  SELECT_REDDIT: (state, action) =>
+    action.payload.reddit
+}, 'reactjs');
 
-const selectedReddit = (state = 'reactjs', action) => {
-  switch (action.type) {
-    case SELECT_REDDIT:
-      return action.payload.reddit;
-    default:
-      return state;
-  }
-};
+const posts = handleActions({
+  INVALIDATE_REDDIT: (state, action) =>
+    merge(state, {
+      didInvalidate: true
+    }),
+  REQUEST_POSTS: (state, action) =>
+    merge(state, {
+      isFetching: true,
+      didInvalidate: false
+    }),
+  RECEIVE_POSTS: (state, action) =>
+    merge(state, {
+      isFetching: false,
+      didInvalidate: false,
+      items: action.payload.posts,
+      lastUpdated: action.payload.receivedAt
+    })
+}, {
+    isFetching: false,
+    didInvalidate: false,
+    items: []
+  });
 
-const posts = (state = {
-  isFetching: false,
-  didInvalidate: false,
-  items: []
-}, action) => {
-  switch (action.type) {
-    case INVALIDATE_REDDIT:
-      return merge(state, {
-        didInvalidate: true
-      });
-    case REQUEST_POSTS:
-      return merge(state, {
-        isFetching: true,
-        didInvalidate: false
-      });
-    case RECEIVE_POSTS:
-      return merge(state, {
-        isFetching: false,
-        didInvalidate: false,
-        items: action.payload.posts,
-        lastUpdated: action.payload.receivedAt
-      });
-    default:
-      return state;
-  }
-};
-
-const postsByReddit = (state = {}, action) => {
-  switch (action.type) {
-    case INVALIDATE_REDDIT:
-    case RECEIVE_POSTS:
-    case REQUEST_POSTS:
-      return merge(state, {
-        [action.payload.reddit]: posts(state[action.payload.reddit], action)
-      });
-    default:
-      return state;
-  }
-};
+const postsByReddit = handleActions(zipObj(
+  ['INVALIDATE_REDDIT', 'RECEIVE_POSTS', 'REQUEST_POSTS'],
+  repeat((state, action) => {
+    const { payload: {reddit} } = action;
+    return merge(state, {
+      [reddit]: posts(state[reddit], action)
+    });
+  }, 3)
+), {});
 
 const rootReducer = combineReducers({
   postsByReddit,

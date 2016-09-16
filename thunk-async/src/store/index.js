@@ -4,21 +4,30 @@ import thunk from 'redux-thunk';
 
 import rootReducer from '../reducers';
 
-let middleware = [thunk];
-let enhancer = applyMiddleware(...middleware);
+const middlewares = [thunk];
 
-if (process.env.NODE_ENV !== 'production') {
-  middleware.push(createLogger());
-  enhancer = compose(
-    applyMiddleware(...middleware),
-    window.devToolsExtension ? window.devToolsExtension() : f => f
-  );
-}
-
-const configureStore = () =>
-  createStore(
+const prodStore = (middlewares) => {
+  return createStore(
     rootReducer,
-    enhancer
+    applyMiddleware(...middlewares)
   );
+};
+
+const devStore = (middlewares) => {
+  return createStore(
+    rootReducer,
+    compose(
+      applyMiddleware(...middlewares, createLogger()),
+      window.devToolsExtension ? window.devToolsExtension() : f => f
+    )
+  );
+};
+
+const configureStore = () => {
+  if (process.env.NODE_ENV !== 'production') {
+    return devStore(middlewares);
+  }
+  return prodStore(middlewares);
+}
 
 export default configureStore;

@@ -1,40 +1,22 @@
-export const REQUEST_POSTS = 'REQUEST_POSTS';
-export const RECEIVE_POSTS = 'RECEIVE_POSTS';
-export const SELECT_REDDIT = 'SELECT_REDDIT';
-export const INVALIDATE_REDDIT = 'INVALIDATE_REDDIT';
+import { createAction } from 'redux-actions';
 
-export const selectReddit = (reddit) => ({
-  type: SELECT_REDDIT,
-  payload: reddit
-});
+export const selectReddit = createAction('SELECT_REDDIT');
+export const invalidateReddit = createAction('INVALIDATE_REDDIT');
+const requestPosts = createAction('REQUEST_POSTS');
+const receivePosts = createAction('RECEIVE_POSTS');
 
-export const invalidateReddit = (reddit) => ({
-  type: INVALIDATE_REDDIT,
-  payload: reddit
-});
-
-const requestPosts = (reddit) => ({
-  type: REQUEST_POSTS,
-  payload: reddit
-});
-
-const receivePosts = ({reddit, posts, receivedAt}) => ({
-  type: RECEIVE_POSTS,
-  payload: {
-    reddit,
-    posts,
-    receivedAt
-  }
-});
+const fetchPostsApi = (reddit) =>
+  fetch(`http://www.reddit.com/r/${reddit}.json`)
+    .then((response) => response.json())
+    .then((json) => json.data.children.map((child) => child.data));
 
 const fetchPosts = (reddit) =>
   (dispatch) => {
-    dispatch(requestPosts(reddit));
-    return fetch(`https://www.reddit.com/r/${reddit}.json`)
-      .then(response => response.json())
-      .then(json => dispatch(receivePosts({
+    dispatch(requestPosts({reddit}));
+    return fetchPostsApi(reddit)
+      .then((posts) => dispatch(receivePosts({
         reddit,
-        posts: json.data.children.map(child => child.data),
+        posts,
         receivedAt: Date.now()
       })));
   };
