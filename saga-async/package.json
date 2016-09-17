@@ -3,8 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "devDependencies": {
-    "babel-cli": "^6.14.0",
+    "babel-polyfill": "^6.13.0",
     "babel-preset-es2015": "^6.14.0",
+    "babel-register": "^6.14.0",
     "react-scripts": "^0.4.0",
     "sinon": "^1.17.5",
     "tap-spec": "^4.1.1",
@@ -23,7 +24,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "babel-node test/sagas.js | tap-spec",
+    "test": "tape -r babel-polyfill -r babel-register test/**/*.js | tap-spec",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
