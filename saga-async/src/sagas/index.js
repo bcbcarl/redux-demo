@@ -26,9 +26,7 @@ export function* fetchPosts(reddit) {
 
 export function* invalidateReddit() {
   while (true) {
-    const {
-      payload: {reddit}
-    } = yield take('INVALIDATE_REDDIT');
+    const { payload: {reddit} } = yield take('INVALIDATE_REDDIT');
     yield call(fetchPosts, reddit);
   }
 }
