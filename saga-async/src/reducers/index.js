@@ -1,52 +1,37 @@
-import { merge } from 'ramda';
+import { merge, repeat, zipObj } from 'ramda';
 import { combineReducers } from 'redux';
+import { handleActions } from 'redux-actions';
 
-import {
-  SELECT_REDDIT,
-  REQUEST_POSTS,
-  RECEIVE_POSTS
-} from '../actions';
+const selectedReddit = handleActions({
+  SELECT_REDDIT: (state, action) =>
+    action.payload.reddit
+}, 'reactjs');
 
-const selectedReddit = (state = 'reactjs', action) => {
-  switch (action.type) {
-    case SELECT_REDDIT:
-      return action.payload.reddit;
-    default:
-      return state;
-  }
-};
+const posts = handleActions({
+  REQUEST_POSTS: (state, action) =>
+    merge(state, {
+      isFetching: true
+    }),
+  RECEIVE_POSTS: (state, action) =>
+    merge(state, {
+      isFetching: false,
+      items: action.payload.posts,
+      lastUpdated: action.payload.receivedAt
+    })
+}, {
+    isFetching: false,
+    items: []
+  });
 
-const posts = (state = {
-  isFetching: false,
-  items: []
-}, action) => {
-  switch (action.type) {
-    case REQUEST_POSTS:
-      return merge(state, {
-        isFetching: true
-      });
-    case RECEIVE_POSTS:
-      return merge(state, {
-        isFetching: false,
-        items: action.payload.posts,
-        lastUpdated: action.payload.receivedAt
-      });
-    default:
-      return state;
-  }
-};
-
-const postsByReddit = (state = {}, action) => {
-  switch (action.type) {
-    case RECEIVE_POSTS:
-    case REQUEST_POSTS:
-      return merge(state, {
-        [action.payload.reddit]: posts(state[action.payload.reddit], action)
-      });
-    default:
-      return state;
-  }
-};
+const postsByReddit = handleActions(zipObj(
+  ['RECEIVE_POSTS', 'REQUEST_POSTS'],
+  repeat((state, action) => {
+    const { payload: {reddit} } = action;
+    return merge(state, {
+      [reddit]: posts(state[reddit], action)
+    });
+  }, 2)
+), {});
 
 const rootReducer = combineReducers({
   postsByReddit,

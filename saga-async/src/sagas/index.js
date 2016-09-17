@@ -1,6 +1,9 @@
 import { take, put, call, fork, select } from 'redux-saga/effects';
 
-import * as actions from '../actions';
+import {
+  requestPosts,
+  receivePosts
+} from '../actions';
 import {
   selectedRedditSelector,
   postsByRedditSelector
@@ -8,13 +11,13 @@ import {
 
 export const fetchPostsApi = (reddit) =>
   fetch(`http://www.reddit.com/r/${reddit}.json`)
-    .then(response => response.json())
-    .then(json => json.data.children.map(child => child.data));
+    .then((response) => response.json())
+    .then((json) => json.data.children.map((child) => child.data));
 
 export function* fetchPosts(reddit) {
-  yield put(actions.requestPosts(reddit));
+  yield put(requestPosts({reddit}));
   const posts = yield call(fetchPostsApi, reddit);
-  yield put(actions.receivePosts({
+  yield put(receivePosts({
     reddit,
     posts,
     receivedAt: Date.now()
@@ -23,7 +26,9 @@ export function* fetchPosts(reddit) {
 
 export function* invalidateReddit() {
   while (true) {
-    const { reddit } = yield take(actions.INVALIDATE_REDDIT);
+    const {
+      payload: {reddit}
+    } = yield take('INVALIDATE_REDDIT');
     yield call(fetchPosts, reddit);
   }
 }
@@ -31,7 +36,7 @@ export function* invalidateReddit() {
 export function* nextRedditChange() {
   while (true) {
     const prevReddit = yield select(selectedRedditSelector);
-    yield take(actions.SELECT_REDDIT);
+    yield take('SELECT_REDDIT');
 
     const newReddit = yield select(selectedRedditSelector);
     const postsByReddit = yield select(postsByRedditSelector);

@@ -9,7 +9,10 @@ import {
   nextRedditChange,
   startup
 } from '../src/sagas';
-import * as actions from '../src/actions';
+import {
+  requestPosts,
+  receivePosts
+} from '../src/actions';
 import {
   postsByRedditSelector,
   selectedRedditSelector
@@ -22,7 +25,7 @@ test('fetchPosts Saga', (t) => {
   const clock = useFakeTimers(Date.now());
   t.deepEqual(
     generator.next().value,
-    put(actions.requestPosts(reddit)),
+    put(requestPosts({reddit})),
     'must dispatch a requestPosts action'
   );
   t.deepEqual(
@@ -32,7 +35,7 @@ test('fetchPosts Saga', (t) => {
   );
   t.deepEqual(
     generator.next(posts).value,
-    put(actions.receivePosts({
+    put(receivePosts({
       reddit,
       posts,
       receivedAt: Date.now()
@@ -45,20 +48,24 @@ test('fetchPosts Saga', (t) => {
 });
 
 test('invalidateReddit Saga', (t) => {
-  const generator = invalidateReddit()
+  const generator = invalidateReddit();
   t.deepEqual(
     generator.next().value,
-    take(actions.INVALIDATE_REDDIT),
+    take('INVALIDATE_REDDIT'),
     'must take a SELECT_REDDIT action'
   );
   t.deepEqual(
-    generator.next({ reddit: 'new_reddit_1' }).value,
+    generator.next({
+      payload: {
+        reddit: 'new_reddit_1'
+      }
+    }).value,
     call(fetchPosts, 'new_reddit_1'),
     'must call fetchPosts with new reddit'
   );
   t.deepEqual(
     generator.next().value,
-    take(actions.INVALIDATE_REDDIT),
+    take('INVALIDATE_REDDIT'),
     'must go back to beginning of loop'
   );
   t.end();
@@ -73,7 +80,7 @@ test('nextRedditChange Saga when switching to new reddit', (t) => {
   );
   t.deepEqual(
     generator.next('prev_reddit').value,
-    take(actions.SELECT_REDDIT),
+    take('SELECT_REDDIT'),
     'must take a SELECT_REDDIT action'
   );
   t.deepEqual(

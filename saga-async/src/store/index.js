@@ -6,20 +6,29 @@ import rootReducer from '../reducers';
 import sagaMonitor from '../saga-monitor';
 
 const sagaMiddleware = createSagaMiddleware({ sagaMonitor });
-let sagaEnhancer = applyMiddleware(sagaMiddleware);
 
-if (process.env.NODE_ENV !== 'production') {
-  sagaEnhancer = compose(
-    applyMiddleware(sagaMiddleware),
-    window.devToolsExtension ? window.devToolsExtension() : f => f
-  );
-}
-
-const configureStore = () => merge(
+const prodStore = (sagaMiddleware) => merge(
   createStore(
     rootReducer,
-    sagaEnhancer
+    applyMiddleware(sagaMiddleware)
   ),
   { runSaga: sagaMiddleware.run });
+
+const devStore = (sagaMiddleware) => merge(
+  createStore(
+    rootReducer,
+    compose(
+      applyMiddleware(sagaMiddleware),
+      window.devToolsExtension ? window.devToolsExtension() : f => f
+    )
+  ),
+  { runSaga: sagaMiddleware.run });
+
+const configureStore = () => {
+  if (process.env.NODE_ENV !== 'production') {
+    return devStore(sagaMiddleware);
+  }
+  return prodStore(sagaMiddleware);
+}
 
 export default configureStore;
