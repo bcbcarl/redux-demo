@@ -9,11 +9,13 @@ import {
   postsByRedditSelector
 } from '../reducers/selectors';
 
+// APIs
 export const fetchPostsApi = (reddit) =>
   fetch(`http://www.reddit.com/r/${reddit}.json`)
     .then((response) => response.json())
     .then((json) => json.data.children.map((child) => child.data));
 
+// subroutines
 export function* fetchPosts(reddit) {
   yield put(requestPosts({reddit}));
   const posts = yield call(fetchPostsApi, reddit);
@@ -24,6 +26,7 @@ export function* fetchPosts(reddit) {
   }));
 }
 
+// watchers
 export function* invalidateReddit() {
   while (true) {
     const { payload: {reddit} } = yield take('INVALIDATE_REDDIT');
@@ -43,11 +46,13 @@ export function* nextRedditChange() {
   }
 }
 
+// init
 export function* startup() {
   const selectedReddit = yield select(selectedRedditSelector);
   yield fork(fetchPosts, selectedReddit);
 }
 
+// root saga
 export default function* root() {
   yield fork(startup);
   yield fork(nextRedditChange);
