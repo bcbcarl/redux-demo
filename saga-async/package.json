@@ -4,9 +4,9 @@
   "private": true,
   "devDependencies": {
     "babel-polyfill": "^6.16.0",
-    "babel-preset-es2015": "^6.16.0",
-    "babel-register": "^6.16.3",
-    "react-scripts": "^0.6.1",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-register": "^6.18.0",
+    "react-scripts": "^0.7.0",
     "sinon": "^1.17.6",
     "tap-spec": "^4.1.1",
     "tape": "^4.6.2"
@@ -18,16 +18,13 @@
     "react-redux": "^4.4.5",
     "recompose": "^0.20.2",
     "redux": "^3.5.2",
-    "redux-actions": "^0.12.0",
-    "redux-saga": "^0.12.0"
+    "redux-actions": "^0.13.0",
+    "redux-saga": "^0.12.1"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "tape -r babel-polyfill -r babel-register test/**/*.js | tap-spec",
     "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": "./node_modules/react-scripts/config/eslint.js"
   }
 }
